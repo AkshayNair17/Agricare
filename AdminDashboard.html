@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agricare — Master Admin Control Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+ --ink:        #1B2B1F;
+ --cream:      #F7F4EA;
+ --leaf:       #5C8A4E;
+ --leaf-dark:  #426338;
+ --clay:       #C8915B;
+ --soil-paper: #E8E2D0;
+ --ink-soft:   #36493B;
+ --cream-dim:  #EDE9DB;
+ --line:       #D9D3C2;
+ --err:        #C24A3C;
+ --err-bg:     #FDF4F2;
+ --succ:       #388E3C;
+ --succ-bg:    #E8F5E9;
+ --font-display: "Fraunces", Georgia, serif;
+ --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ --radius-lg: 18px;
+ --radius-md: 12px;
+ --radius-sm: 9px;
+ --ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+* { box-sizing: border-box; }
+html, body {
+ margin: 0; padding: 0;
+ font-family: var(--font-body);
+ color: var(--ink);
+ background: var(--cream);
+}
+button { font-family: inherit; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+
+/* Layout Shell */
+.admin-shell {
+ display: grid;
+ grid-template-columns: 280px 1fr;
+ min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+ background: linear-gradient(160deg, #111B15 0%, var(--ink) 45%, #1F3324 100%);
+ color: var(--cream);
+ padding: 32px 20px;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ position: sticky;
+ top: 0;
+ height: 100vh;
+ overflow-y: auto;
+}
+.sidebar-brand {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ font-family: var(--font-display);
+ font-size: 20px;
+ font-weight: 600;
+ color: var(--cream);
+ margin-bottom: 30px;
+ padding-left: 8px;
+}
+.sidebar-brand span { color: var(--clay); }
+.nav-links {
+ display: flex;
+ flex-direction: column;
+ gap: 6px;
+}
+.nav-item {
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ padding: 12px 14px;
+ border-radius: var(--radius-sm);
+ font-size: 14px;
+ font-weight: 500;
+ color: rgba(247,244,234,0.75);
+ background: transparent;
+ border: none;
+ width: 100%;
+ text-align: left;
+ transition: background 0.2s ease, color 0.2s ease;
+}
+.nav-item:hover, .nav-item.is-active {
+ background: rgba(255,255,255,0.08);
+ color: var(--cream);
+}
+.nav-item.is-active { font-weight: 600; border-left: 3px solid var(--leaf); }
+
+.admin-user-box {
+ padding-top: 18px;
+ border-top: 1px solid rgba(247,244,234,0.15);
+ display: flex;
+ flex-direction: column;
+ gap: 10px;
+}
+.admin-meta { font-size: 12.5px; color: rgba(247,244,234,0.6); word-break: break-all; }
+.btn-logout {
+ padding: 10px;
+ background: rgba(194,74,60,0.2);
+ border: 1px solid rgba(194,74,60,0.4);
+ color: #F5A59B;
+ border-radius: var(--radius-sm);
+ font-weight: 600;
+ font-size: 13px;
+ transition: background 0.2s ease;
+}
+.btn-logout:hover { background: rgba(194,74,60,0.35); color: #fff; }
+
+/* Main Content Area */
+.main-content {
+ padding: 40px;
+ overflow-y: auto;
+ max-height: 100vh;
+}
+.section-panel { display: none; }
+.section-panel.is-active { display: block; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn {
+ from { opacity: 0; transform: translateY(6px); }
+ to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header { margin-bottom: 30px; }
+.page-title {
+ font-family: var(--font-display);
+ font-size: 30px;
+ margin: 0 0 6px;
+ letter-spacing: -0.01em;
+}
+.page-sub { font-size: 14.5px; color: var(--ink-soft); margin: 0; }
+
+/* Stats Grid */
+.stats-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+ gap: 18px;
+ margin-bottom: 28px;
+}
+.stat-card {
+ background: #FFFFFF;
+ border: 1.5px solid var(--line);
+ border-radius: var(--radius-md);
+ padding: 20px;
+ display: flex;
+ flex-direction: column;
+ gap: 6px;
+ box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.stat-card-title { font-size: 12px; font-weight: 600; color: #8C8474; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-card-value { font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--ink); }
+
+/* Content Cards & Tables */
+.content-card {
+ background: #FFFFFF;
+ border: 1.5px solid var(--line);
+ border-radius: var(--radius-lg);
+ padding: 24px;
+ margin-bottom: 28px;
+ box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.card-header-row {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 18px;
+ flex-wrap: wrap;
+ gap: 12px;
+}
+.card-title { font-family: var(--font-display); font-size: 19px; margin: 0; }
+
+.table-wrapper { width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+th {
+ background: var(--cream);
+ font-weight: 600;
+ color: var(--ink-soft);
+ font-size: 12px;
+ text-transform: uppercase;
+ letter-spacing: 0.05em;
+}
+tr:hover td { background: rgba(247,244,234,0.4); }
+
+.badge {
+ display: inline-block;
+ padding: 4px 10px;
+ border-radius: 20px;
+ font-size: 11px;
+ font-weight: 600;
+ text-transform: uppercase;
+}
+.badge-admin { background: #E2ECE0; color: var(--leaf-dark); }
+.badge-user { background: var(--soil-paper); color: var(--ink-soft); }
+.badge-active { background: var(--succ-bg); color: var(--succ); }
+.badge-inactive { background: var(--err-bg); color: var(--err); }
+.badge-warn { background: #FFF3E0; color: #E65100; }
+
+.btn-action {
+ padding: 5px 10px;
+ font-size: 11.5px;
+ font-weight: 600;
+ border-radius: 6px;
+ border: 1px solid var(--line);
+ background: #FFF;
+ color: var(--ink-soft);
+ transition: all 0.2s;
+ margin-right: 4px;
+}
+.btn-action:hover { background: var(--cream-dim); border-color: #BDB6A4; }
+.btn-action.btn-danger { color: var(--err); border-color: rgba(194,74,60,0.3); background: var(--err-bg); }
+.btn-action.btn-danger:hover { background: #f9e2e0; }
+.btn-action.btn-success { color: var(--succ); border-color: rgba(56,142,60,0.3); background: var(--succ-bg); }
+
+/* Form Elements */
+.form-grid {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 16px;
+ margin-bottom: 14px;
+}
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+.form-field input, .form-field textarea, .form-field select {
+ padding: 10px 12px;
+ border: 1.5px solid var(--line);
+ border-radius: var(--radius-sm);
+ font-family: inherit;
+ font-size: 13.5px;
+ background: #FFF;
+}
+.form-field textarea { resize: vertical; height: 80px; }
+.btn-primary {
+ padding: 11px 18px;
+ background: var(--ink);
+ color: var(--cream);
+ border: none;
+ border-radius: var(--radius-sm);
+ font-weight: 700;
+ font-size: 13.5px;
+ cursor: pointer;
+ transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--leaf-dark); }
+
+/* Toasts */
+.toast-stack {
+ position: fixed; top: 24px; right: 24px; z-index: 999;
+ display: flex; flex-direction: column; gap: 10px; max-width: 360px;
+}
+.toast {
+ background: var(--ink); color: var(--cream); padding: 14px 16px;
+ border-radius: var(--radius-sm); font-size: 13.5px;
+ box-shadow: 0 10px 24px rgba(0,0,0,0.2); border-left: 3px solid var(--leaf);
+ animation: toastIn 0.3s ease both;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+@media (max-width: 900px) {
+ .admin-shell { grid-template-columns: 1fr; }
+ .sidebar { height: auto; position: relative; }
+ .form-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<div class="admin-shell">
+ <!-- Sidebar Navigation -->
+ <aside class="sidebar">
+  <div>
+   <div class="sidebar-brand">
+    <svg width="22" height="22" viewBox="0 0 26 26" fill="none"><path d="M13 24C13 24 5 19.5 5 11.8C5 7.9 8.2 5 12 5C12 5 12.5 13 19.5 14.5C19.5 14.5 21 24 13 24Z" fill="currentColor"/><path d="M13 24V13" stroke="#1B2B1F" stroke-width="1.1"/></svg>
+    Agricare <span>Admin</span>
+   </div>
+   <nav class="nav-links">
+    <button class="nav-item is-active" data-target="panel-analytics">📊 System Analytics</button>
+    <button class="nav-item" data-target="panel-users">👥 Users & Role Control</button>
+    <button class="nav-item" data-target="panel-security">🔒 Security & Sessions</button>
+    <button class="nav-item" data-target="panel-crops">🌾 Crop & Disease Data</button>
+    <button class="nav-item" data-target="panel-schemes">🏛️ Government Schemes</button>
+   </nav>
+  </div>
+  <div class="admin-user-box">
+   <div class="admin-meta" id="admin-logged-email">Administrator Node</div>
+   <button class="btn-logout" id="btn-admin-logout">Sign Out</button>
+  </div>
+ </aside>
+
+ <!-- Main Content Area -->
+ <main class="main-content">
+
+  <!-- 1. SYSTEM ANALYTICS PANEL -->
+  <section class="section-panel is-active" id="panel-analytics">
+   <div class="page-header">
+    <h1 class="page-title">System Analytics</h1>
+    <p class="page-sub">Comprehensive real-time metrics of users, platform actions, and activity logs.</p>
+   </div>
+
+   <div class="stats-grid">
+    <div class="stat-card">
+     <span class="stat-card-title">Total Users</span>
+     <span class="stat-card-value" id="stat-users">1,248</span>
+    </div>
+    <div class="stat-card">
+     <span class="stat-card-title">Active Sessions</span>
+     <span class="stat-card-value">312</span>
+    </div>
+    <div class="stat-card">
+     <span class="stat-card-title">Indexed Crops</span>
+     <span class="stat-card-value">46</span>
+    </div>
+    <div class="stat-card">
+     <span class="stat-card-title">Security Alerts</span>
+     <span class="stat-card-value" style="color: var(--err);">2</span>
+    </div>
+   </div>
+
+   <div class="content-card">
+    <h2 class="card-title" style="margin-bottom: 14px;">Platform Utilization Overview</h2>
+    <p style="font-size: 14px; color: var(--ink-soft); line-height: 1.6;">
+      System health is optimal. Database storage usage is currently at <strong>14.2%</strong> of allocated capacity. 
+      All connected MySQL service endpoints are responding under 45ms.
+    </p>
+   </div>
+  </section>
+
+  <!-- 2. USER & ROLE MANAGEMENT PANEL -->
+  <section class="section-panel" id="panel-users">
+   <div class="page-header">
+    <h1 class="page-title">User & Role Management</h1>
+    <p class="page-sub">View accounts, adjust admin privileges, activate/deactivate status, or delete accounts.</p>
+   </div>
+
+   <div class="content-card">
+    <div class="card-header-row">
+     <h2 class="card-title">Registered User Directory</h2>
+     <button class="btn-action" onclick="showToast('User directory refreshed.')">🔄 Sync Data</button>
+    </div>
+    <div class="table-wrapper">
+     <table>
+      <thead>
+       <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Location</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Actions</th>
+       </tr>
+      </thead>
+      <tbody id="user-management-tbody">
+       <tr>
+        <td>Akshay Nair</td>
+        <td>akshaynair17@gmail.com</td>
+        <td>Kalyan, MH</td>
+        <td><span class="badge badge-admin">Admin</span></td>
+        <td><span class="badge badge-active">Active</span></td>
+        <td>
+         <button class="btn-action" onclick="toggleRole(this)">Toggle Role</button>
+         <button class="btn-action btn-danger" onclick="deleteRecord(this)">Delete</button>
+        </td>
+       </tr>
+       <tr>
+        <td>Purva More</td>
+        <td>morepurva@gmail.com</td>
+        <td>Nashik, MH</td>
+        <td><span class="badge badge-admin">Admin</span></td>
+        <td><span class="badge badge-active">Active</span></td>
+        <td>
+         <button class="btn-action" onclick="toggleRole(this)">Toggle Role</button>
+         <button class="btn-action btn-danger" onclick="deleteRecord(this)">Delete</button>
+        </td>
+       </tr>
+       <tr>
+        <td>Rahul Patil</td>
+        <td>rahul.farmer@gmail.com</td>
+        <td>Nagpur, MH</td>
+        <td><span class="badge badge-user">User</span></td>
+        <td><span class="badge badge-active">Active</span></td>
+        <td>
+         <button class="btn-action" onclick="toggleRole(this)">Toggle Role</button>
+         <button class="btn-action btn-danger" onclick="deleteRecord(this)">Delete</button>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </section>
+
+  <!-- 3. SECURITY & ACCESS PANEL -->
+  <section class="section-panel" id="panel-security">
+   <div class="page-header">
+    <h1 class="page-title">Security & Access Logs</h1>
+    <p class="page-sub">Monitor active sessions, login attempts, and track unauthorized access vectors.</p>
+   </div>
+
+   <div class="content-card">
+    <div class="card-header-row">
+     <h2 class="card-title">Recent Authentication Audits</h2>
+     <span class="badge badge-warn">Live Firewall Active</span>
+    </div>
+    <div class="table-wrapper">
+     <table>
+      <thead>
+       <tr>
+        <th>Timestamp</th>
+        <th>Email Account</th>
+        <th>IP Address</th>
+        <th>Event Type</th>
+        <th>Status</th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>2026-09-10 19:12:04</td>
+        <td>akshaynair17@gmail.com</td>
+        <td>192.168.1.45</td>
+        <td>Admin Login</td>
+        <td><span class="badge badge-active">Success</span></td>
+       </tr>
+       <tr>
+        <td>2026-09-10 18:44:11</td>
+        <td>unknown_attacker@malicious.net</td>
+        <td>45.83.19.12</td>
+        <td>Forced Brute-Force</td>
+        <td><span class="badge badge-inactive">Blocked</span></td>
+       </tr>
+       <tr>
+        <td>2026-09-10 16:22:50</td>
+        <td>rahul.farmer@gmail.com</td>
+        <td>157.34.201.8</td>
+        <td>User Login</td>
+        <td><span class="badge badge-active">Success</span></td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </section>
+
+  <!-- 4. CROP & DISEASE DATA PANEL -->
+  <section class="section-panel" id="panel-crops">
+   <div class="page-header">
+    <h1 class="page-title">Crop & Disease Repository</h1>
+    <p class="page-sub">Add, update, or remove agricultural crop profiles, pest indicators, and treatment details.</p>
+   </div>
+
+   <div class="content-card">
+    <h2 class="card-title" style="margin-bottom: 14px;">Add New Crop or Disease Record</h2>
+    <form id="crop-form">
+     <div class="form-grid">
+      <div class="form-field">
+       <label for="crop-name">Crop / Plant Name</label>
+       <input type="text" id="crop-name" placeholder="e.g., Tomato" required>
+      </div>
+      <div class="form-field">
+       <label for="crop-disease">Associated Disease / Pest</label>
+       <input type="text" id="crop-disease" placeholder="e.g., Early Blight" required>
+      </div>
+     </div>
+     <div class="form-field" style="margin-bottom: 14px;">
+      <label for="crop-treatment">Recommended Treatment / Solution</label>
+      <textarea id="crop-treatment" placeholder="Specify fungicides, organic sprays, or preventive steps..." required></textarea>
+     </div>
+     <button type="submit" class="btn-primary">Save Crop Record</button>
+    </form>
+   </div>
+
+   <div class="content-card">
+    <h2 class="card-title" style="margin-bottom: 14px;">Current Indexed Crops & Pathogens</h2>
+    <div class="table-wrapper">
+     <table>
+      <thead>
+       <tr>
+        <th>Crop Name</th>
+        <th>Pathogen / Disease</th>
+        <th>Treatment Protocol</th>
+        <th>Action</th>
+       </tr>
+      </thead>
+      <tbody id="crops-table-body">
+       <tr>
+        <td><strong>Cotton</strong></td>
+        <td>Pink Bollworm</td>
+        <td>Use pheromone traps and approved Bt spray controls.</td>
+        <td><button class="btn-action btn-danger" onclick="deleteRecord(this)">Remove</button></td>
+       </tr>
+       <tr>
+        <td><strong>Paddy (Rice)</strong></td>
+        <td>Blast Fungus</td>
+        <td>Apply Tricyclazole and avoid excessive nitrogen fertilization.</td>
+        <td><button class="btn-action btn-danger" onclick="deleteRecord(this)">Remove</button></td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </section>
+
+  <!-- 5. GOVERNMENT SCHEMES PANEL -->
+  <section class="section-panel" id="panel-schemes">
+   <div class="page-header">
+    <h1 class="page-title">Government Schemes</h1>
+    <p class="page-sub">Publish, modify, or broadcast farm subsidies and financial welfare schemes.</p>
+   </div>
+
+   <div class="content-card">
+    <h2 class="card-title" style="margin-bottom: 14px;">Publish New Scheme</h2>
+    <form id="scheme-form">
+     <div class="form-grid">
+      <div class="form-field">
+       <label for="scheme-title">Scheme Name / Title</label>
+       <input type="text" id="scheme-title" placeholder="e.g., PM-KUSUM Solar Pump Subsidy" required>
+      </div>
+      <div class="form-field">
+       <label for="scheme-eligibility">Eligibility Criteria</label>
+       <input type="text" id="scheme-eligibility" placeholder="e.g., All Landholding Farmers" required>
+      </div>
+     </div>
+     <div class="form-field" style="margin-bottom: 14px;">
+      <label for="scheme-desc">Description & Benefits</label>
+      <textarea id="scheme-desc" placeholder="Provide complete financial aid details..." required></textarea>
+     </div>
+     <button type="submit" class="btn-primary">Broadcast Scheme</button>
+    </form>
+   </div>
+
+   <div class="content-card">
+    <h2 class="card-title" style="margin-bottom: 14px;">Active Broadcasted Schemes</h2>
+    <div class="table-wrapper">
+     <table>
+      <thead>
+       <tr>
+        <th>Title</th>
+        <th>Eligibility</th>
+        <th>Description</th>
+        <th>Action</th>
+       </tr>
+      </thead>
+      <tbody id="schemes-table-body">
+       <tr>
+        <td><strong>PM-KISAN Samman Nidhi</strong></td>
+        <td>All Landholding Farmers</td>
+        <td>Direct income support of ₹6,000 per year in three installments.</td>
+        <td><button class="btn-action btn-danger" onclick="deleteRecord(this)">Remove</button></td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </section>
+
+ </main>
+</div>
+
+<script>
+// Authentication Security Guard Check
+// Just use the existing variable directly without declaring it again:
+const userRole = localStorage.getItem('userRole');
+if (userRole !== 'admin') {
+    alert('Access Denied: Administrator privileges required.');
+    window.location.href = 'index.html';
+}
+
+// Toast Notification System
+function showToast(message) {
+    const stack = document.getElementById('toast-stack');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    stack.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+}
+
+// Tab Switching Navigation Logic
+document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('is-active'));
+        document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('is-active'));
+        
+        btn.classList.add('is-active');
+        document.getElementById(btn.getAttribute('data-target')).classList.add('is-active');
+    });
+});
+
+// Logout Handling
+document.getElementById('btn-admin-logout').addEventListener('click', () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
+    window.location.href = 'index.html';
+});
+
+// Generic Delete Row Function
+function deleteRecord(btn) {
+    if(confirm('Are you sure you want to remove this record?')) {
+        btn.closest('tr').remove();
+        showToast('Record deleted successfully.');
+    }
+}
+
+// Toggle Admin/User Role Simulation
+function toggleRole(btn) {
+    const row = btn.closest('tr');
+    const badge = row.querySelector('.badge');
+    if (badge.textContent === 'Admin') {
+        badge.textContent = 'User';
+        badge.className = 'badge badge-user';
+        showToast('Role updated to User.');
+    } else {
+        badge.textContent = 'Admin';
+        badge.className = 'badge badge-admin';
+        showToast('Role updated to Admin.');
+    }
+}
+
+// Add Crop Form Handler
+document.getElementById('crop-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('crop-name').value;
+    const disease = document.getElementById('crop-disease').value;
+    const treatment = document.getElementById('crop-treatment').value;
+
+    const tbody = document.getElementById('crops-table-body');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${name}</strong></td><td>${disease}</td><td>${treatment}</td><td><button class="btn-action btn-danger" onclick="deleteRecord(this)">Remove</button></td>`;
+    tbody.appendChild(tr);
+
+    document.getElementById('crop-form').reset();
+    showToast('Crop & disease profile saved successfully!');
+});
+
+// Add Scheme Form Handler
+document.getElementById('scheme-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = document.getElementById('scheme-title').value;
+    const eligibility = document.getElementById('scheme-eligibility').value;
+    const desc = document.getElementById('scheme-desc').value;
+
+    const tbody = document.getElementById('schemes-table-body');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${title}</strong></td><td>${eligibility}</td><td>${desc}</td><td><button class="btn-action btn-danger" onclick="deleteRecord(this)">Remove</button></td>`;
+    tbody.appendChild(tr);
+
+    document.getElementById('scheme-form').reset();
+    showToast('Government scheme broadcasted successfully!');
+});
+</script>
+<script>
+// Base API URL configuration
+const API_BASE = 'http://localhost:5000';
+
+// Authentication Security Guard Check
+// Remove 'const' here if userRole was already declared above:
+// Do not reassign userRole = ... here. Just use the existing variable:
+if (userRole !== 'admin') {
+    alert('Access Denied: Administrator privileges required.');
+    window.location.href = 'index.html';
+}
+
+// Toast Notification System
+function showToast(message) {
+    const stack = document.getElementById('toast-stack');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    stack.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+}
+
+// Tab Switching Navigation Logic
+document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('is-active'));
+        document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('is-active'));
+        
+        btn.classList.add('is-active');
+        document.getElementById(btn.getAttribute('data-target')).classList.add('is-active');
+    });
+});
+
+// Logout Handling
+document.getElementById('btn-admin-logout').addEventListener('click', () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
+    window.location.href = 'index.html';
+});
+
+// Fetch Real Users from Backend Database on Load
+async function fetchUsersFromBackend() {
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/users`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const tbody = document.getElementById('user-management-tbody');
+            tbody.innerHTML = ''; // Clear placeholder rows
+            
+            data.users.forEach(user => {
+                const tr = document.createElement('tr');
+                const badgeClass = user.role === 'admin' ? 'badge-admin' : 'badge-user';
+                
+                tr.innerHTML = `
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.location || 'N/A'}</td>
+                    <td><span class="badge ${badgeClass}">${user.role || 'user'}</span></td>
+                    <td><span class="badge badge-active">Active</span></td>
+                    <td>
+                     <button class="btn-action" onclick="updateUserRole(${user.id}, '${user.role}')">Toggle Role</button>
+                     <button class="btn-action btn-danger" onclick="deleteUser(${user.id}, this)">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('stat-users').textContent = data.users.length;
+        }
+    } catch (error) {
+        console.error('Error connecting to backend:', error);
+        showToast('Running in offline/simulation mode.');
+    }
+}
+
+// Delete User from Backend Database
+async function deleteUser(userId, btn) {
+    if(confirm('Are you sure you want to delete this user from the database?')) {
+        try {
+            const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if(result.success) {
+                btn.closest('tr').remove();
+                showToast('User deleted from database.');
+            } else {
+                showToast('Error: ' + result.message);
+            }
+        } catch(err) {
+            showToast('Server connection failed.');
+        }
+    }
+}
+
+// Toggle Role via Backend
+async function updateUserRole(userId, currentRole) {
+    const newRole = currentRole === 'admin' ? 'user' : 'admin';
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/users/role/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: newRole })
+        });
+        const result = await response.json();
+        if(result.success) {
+            showToast(`Role updated to ${newRole}. Refreshing...`);
+            fetchUsersFromBackend();
+        } else {
+            showToast('Failed to update role.');
+        }
+    } catch(err) {
+        showToast('Server error while updating role.');
+    }
+}
+
+// Generic Delete for local mockup sections (Crops/Schemes)
+function deleteRecord(btn) {
+    if(confirm('Are you sure you want to remove this record?')) {
+        btn.closest('tr').remove();
+        showToast('Record removed successfully.');
+    }
+}
+
+// Add Crop Form Handler
+document.getElementById('crop-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('crop-name').value;
+    const disease = document.getElementById('crop-disease').value;
+    const treatment = document.getElementById('crop-treatment').value;
+
+    const tbody = document.getElementById('crops-table-body');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${name}</strong></td><td>${disease}</td><td>${treatment}</td><td><button class="btn-action btn-danger" onclick="deleteRecord(this)">Remove</button></td>`;
+    tbody.appendChild(tr);
+
+    document.getElementById('crop-form').reset();
+    showToast('Crop & disease profile saved successfully!');
+});
+
+// Add Scheme Form Handler
+document.getElementById('scheme-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = document.getElementById('scheme-title').value;
+    const eligibility = document.getElementById('scheme-eligibility').value;
+    const desc = document.getElementById('scheme-desc').value;
+
+    const tbody = document.getElementById('schemes-table-body');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${title}</strong></td><td>${eligibility}</td><td>${desc}</td><td><button class="btn-action btn-danger" onclick="deleteRecord(this)">Remove</button></td>`;
+    tbody.appendChild(tr);
+
+    document.getElementById('scheme-form').reset();
+    showToast('Government scheme broadcasted successfully!');
+});
+
+// Load live data on window startup
+// Load live data on window startup and auto-refresh every 5 seconds
+window.onload = () => {
+    fetchUsersFromBackend();
+    
+    // Auto-refresh the user table and stats every 5 seconds live
+    setInterval(() => {
+        fetchUsersFromBackend();
+    }, 5000); // 5000 milliseconds = 5 seconds
+};
+</script>
+</body>
+</html>

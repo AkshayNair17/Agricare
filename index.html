@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agricare — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+AGRICARE — LOGIN / REGISTER v2
+Tokens
+============================================ */
+:root {
+ --ink:        #1B2B1F;
+ --cream:      #F7F4EA;
+ --leaf:       #5C8A4E;
+ --leaf-dark:  #426338;
+ --clay:       #C8915B;
+ --soil-paper: #E8E2D0;
+
+ --ink-soft:   #36493B;
+ --cream-dim:  #EDE9DB;
+ --line:       #D9D3C2;
+ --err:        #C24A3C;
+ --err-bg:     #FDF4F2;
+
+ --font-display: "Fraunces", Georgia, serif;
+ --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+ --radius-lg: 18px;
+ --radius-md: 12px;
+ --radius-sm: 9px;
+
+ --ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+ margin: 0;
+ padding: 0;
+ font-family: var(--font-body);
+ color: var(--ink);
+ background: var(--cream);
+}
+
+ button { font-family: inherit; }
+ a { color: inherit; }
+
+:focus-visible {
+ outline: 2px solid var(--leaf);
+ outline-offset: 2px;
+ border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+   *, *::before, *::after {
+   animation-duration: 0.001ms !important;
+   animation-iteration-count: 1 !important;
+   transition-duration: 0.001ms !important;
+ }
+}
+
+/* ============================================
+LAYOUT SHELL
+============================================ */
+.screen {
+ min-height: 100vh;
+ display: grid;
+ grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* ============================================
+LEFT — FIELD PANEL
+============================================ */
+.field-panel {
+ position: relative;
+ overflow: hidden;
+ background: linear-gradient(160deg, #111B15 0%, var(--ink) 45%, #1F3324 100%);
+ color: var(--cream);
+ padding: 56px 56px 48px;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+}
+
+.field-sky {
+ position: absolute;
+ inset: 0;
+ background:
+   radial-gradient(circle at 82% 12%, rgba(200,145,91,0.32) 0%, rgba(200,145,91,0) 42%),
+   radial-gradient(circle at 15% 85%, rgba(92,138,78,0.28) 0%, rgba(92,138,78,0) 50%);
+ animation: driftGlow 16s ease-in-out infinite alternate;
+}
+
+@keyframes driftGlow {
+ from { transform: translate(0, 0) scale(1); opacity: 0.9; }
+ to   { transform: translate(-2%, 1.5%) scale(1.06); opacity: 1; }
+}
+
+/* Drifting particles — like seed-dust catching light */
+.particles {
+ position: absolute;
+ inset: 0;
+ pointer-events: none;
+}
+
+.particle {
+ position: absolute;
+ width: var(--s);
+ height: var(--s);
+ border-radius: 50%;
+ background: rgba(247,244,234,0.5);
+ left: var(--x);
+ top: var(--y);
+ animation: floatUp var(--dur) ease-in-out infinite;
+ animation-delay: var(--delay);
+}
+
+@keyframes floatUp {
+ 0%   { transform: translate(0, 0); opacity: 0; }
+ 10%  { opacity: 0.6; }
+ 50%  { transform: translate(8px, -40px); opacity: 0.35; }
+ 90%  { opacity: 0; }
+ 100% { transform: translate(-6px, -90px); opacity: 0; }
+}
+
+.horizon-svg {
+ position: absolute;
+ inset: 0;
+ width: 100%;
+ height: 100%;
+ pointer-events: none;
+}
+
+.growth-line {
+ fill: none;
+ stroke: rgba(247,244,234,0.32);
+ stroke-width: 1.6;
+ stroke-linecap: round;
+ stroke-dasharray: 900;
+ stroke-dashoffset: 900;
+ animation: drawLine 2.4s var(--ease) 0.3s forwards, dashFlow 30s linear 2.7s infinite;
+}
+
+@keyframes drawLine {
+ to { stroke-dashoffset: 0; }
+}
+
+@keyframes dashFlow {
+ 0%   { stroke-dasharray: 900; stroke-dashoffset: 0; }
+ 100% { stroke-dasharray: 6 10; stroke-dashoffset: -400; }
+}
+
+.growth-dot {
+ fill: var(--clay);
+ opacity: 0;
+ animation: dotArrive 0.5s ease 2.4s forwards, pulseDot 3.2s ease-in-out 2.9s infinite;
+}
+
+@keyframes dotArrive {
+ from { opacity: 0; r: 1; }
+ to   { opacity: 1; r: 4.5; }
+}
+
+@keyframes pulseDot {
+ 0%, 100% { r: 4.5; opacity: 0.85; }
+ 50%      { r: 6.5; opacity: 1; }
+}
+
+.crop-rows {
+ position: absolute;
+ inset: 0;
+ width: 100%;
+ height: 100%;
+ pointer-events: none;
+}
+
+ .crop-rows .row path { fill: rgba(92,138,78,0.16); }
+ .crop-rows .row:nth-child(2) path { fill: rgba(247,244,234,0.05); }
+
+.field-content {
+ position: relative;
+ z-index: 2;
+ display: flex;
+ flex-direction: column;
+ gap: 28px;
+}
+
+.brand {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ opacity: 0;
+ animation: riseIn 0.6s ease 0.1s forwards;
+}
+
+.brand-mark {
+ color: var(--clay);
+ display: inline-flex;
+ animation: leafSway 5s ease-in-out infinite;
+ transform-origin: bottom center;
+}
+
+@keyframes leafSway {
+ 0%, 100% { transform: rotate(0deg); }
+ 50% { transform: rotate(-6deg); }
+}
+
+ .brand-mark--dark { color: var(--leaf); }
+
+.brand-name {
+ font-family: var(--font-display);
+ font-weight: 600;
+ font-size: 19px;
+ letter-spacing: 0.01em;
+}
+
+ .brand-name--dark { color: var(--ink); }
+
+.field-headline {
+ font-family: var(--font-display);
+ font-weight: 600;
+ font-optical-sizing: auto;
+ font-size: clamp(34px, 4.4vw, 52px);
+ line-height: 1.08;
+ margin: 16px 0 0;
+ letter-spacing: -0.01em;
+ opacity: 0;
+ animation: riseIn 0.7s ease 0.25s forwards;
+}
+
+.field-sub {
+ font-size: 15.5px;
+ line-height: 1.6;
+ color: rgba(247,244,234,0.72);
+ max-width: 380px;
+ margin: 0;
+ opacity: 0;
+ animation: riseIn 0.7s ease 0.4s forwards;
+}
+
+@keyframes riseIn {
+ from { opacity: 0; transform: translateY(14px); }
+ to   { opacity: 1; transform: translateY(0); }
+}
+
+.field-stats {
+ display: flex;
+ gap: 28px;
+ margin-top: 8px;
+ padding-top: 24px;
+ border-top: 1px solid rgba(247,244,234,0.16);
+ opacity: 0;
+ animation: riseIn 0.7s ease 0.55s forwards;
+}
+
+ .stat { display: flex; flex-direction: column; gap: 4px; }
+
+.stat-label {
+ font-size: 11.5px;
+ text-transform: uppercase;
+ letter-spacing: 0.08em;
+ color: rgba(247,244,234,0.55);
+}
+
+.stat-value {
+ font-family: var(--font-display);
+ font-size: 22px;
+ font-weight: 500;
+ color: var(--cream);
+ display: inline-flex;
+ align-items: baseline;
+ gap: 6px;
+}
+
+.stat-value .live-dot {
+ width: 6px;
+ height: 6px;
+ border-radius: 50%;
+ background: var(--leaf);
+ display: inline-block;
+ animation: livePulse 2s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+ 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(92,138,78,0.5); }
+ 50%      { opacity: 0.6; box-shadow: 0 0 0 4px rgba(92,138,78,0); }
+}
+
+/* ============================================
+RIGHT — FORM PANEL
+============================================ */
+.form-panel {
+ background: var(--cream);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 48px 32px;
+ position: relative;
+}
+
+.form-wrap {
+ width: 100%;
+ max-width: 408px;
+}
+
+.mobile-brand {
+ display: none;
+ align-items: center;
+ gap: 9px;
+ margin-bottom: 28px;
+}
+
+/* Tabs */
+.tabs {
+ position: relative;
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ background: var(--soil-paper);
+ border-radius: 12px;
+ padding: 4px;
+ margin-bottom: 32px;
+}
+
+.tab {
+ position: relative;
+ z-index: 2;
+ background: transparent;
+ border: none;
+ padding: 11px 0;
+ font-size: 14.5px;
+ font-weight: 600;
+ color: var(--ink-soft);
+ cursor: pointer;
+ border-radius: 9px;
+ transition: color 0.25s ease;
+}
+
+ .tab.is-active { color: var(--cream); }
+
+.tab-indicator {
+ position: absolute;
+ top: 4px;
+ left: 4px;
+ width: calc(50% - 4px);
+ height: calc(100% - 8px);
+ background: var(--ink);
+ border-radius: 9px;
+ transition: transform 0.32s var(--ease);
+ z-index: 1;
+}
+
+ .tabs.register-active .tab-indicator { transform: translateX(100%); }
+
+/* Panels */
+ .panel { display: none; }
+
+.panel.is-active {
+ display: block;
+ animation: panelIn 0.45s var(--ease) both;
+}
+
+@keyframes panelIn {
+ from { opacity: 0; transform: translateY(10px) scale(0.99); }
+ to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.form-title {
+ font-family: var(--font-display);
+ font-weight: 600;
+ font-size: 28px;
+ margin: 0 0 6px;
+ letter-spacing: -0.01em;
+}
+
+.form-subtitle {
+ font-size: 14.5px;
+ color: var(--ink-soft);
+ margin: 0 0 28px;
+ line-height: 1.5;
+}
+
+/* Growth steps */
+.growth-steps {
+ display: flex;
+ align-items: center;
+ gap: 0;
+ margin-bottom: 30px;
+}
+
+.growth-steps .seg {
+ flex: 1;
+ height: 3px;
+ background: var(--line);
+ border-radius: 2px;
+ position: relative;
+ overflow: hidden;
+}
+
+.growth-steps .seg::after {
+ content: '';
+ position: absolute;
+ inset: 0;
+ background: var(--leaf);
+ transform: scaleX(0);
+ transform-origin: left;
+ transition: transform 0.5s var(--ease);
+}
+
+ .growth-steps .seg.is-filled::after { transform: scaleX(1); }
+
+.growth-steps .node {
+ width: 28px;
+ height: 28px;
+ border-radius: 50%;
+ background: var(--soil-paper);
+ border: 2px solid var(--line);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ flex-shrink: 0;
+ margin: 0 6px;
+ transition: border-color 0.35s ease, background 0.35s ease, transform 0.35s var(--ease);
+ position: relative;
+}
+
+ .growth-steps .node svg { width: 13px; height: 13px; }
+
+.growth-steps .node .node-leaf {
+ color: var(--ink-soft);
+ opacity: 1;
+ transition: opacity 0.2s ease;
+}
+
+.growth-steps .node .node-check {
+ color: var(--cream);
+ opacity: 0;
+ position: absolute;
+ transition: opacity 0.2s ease, transform 0.3s var(--ease);
+ transform: scale(0.5);
+}
+
+.growth-steps .node.is-current {
+ border-color: var(--leaf);
+ background: var(--cream);
+ transform: scale(1.12);
+}
+
+ .growth-steps .node.is-current .node-leaf { color: var(--leaf); }
+
+.growth-steps .node.is-done {
+ border-color: var(--leaf);
+ background: var(--leaf);
+}
+
+ .growth-steps .node.is-done .node-leaf { opacity: 0; }
+.growth-steps .node.is-done .node-check {
+ opacity: 1;
+ transform: scale(1);
+}
+
+/* Step panes inside register form */
+.step-track {
+ position: relative;
+ overflow: hidden;
+}
+
+.step-pane {
+ display: none;
+}
+
+.step-pane.is-active {
+ display: block;
+ animation: stepIn 0.4s var(--ease) both;
+}
+
+@keyframes stepIn {
+ from { opacity: 0; transform: translateX(18px); }
+ to   { opacity: 1; transform: translateX(0); }
+}
+
+.step-pane.is-leaving-back {
+ animation: stepInBack 0.4s var(--ease) both;
+}
+
+@keyframes stepInBack {
+ from { opacity: 0; transform: translateX(-18px); }
+ to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Fields */
+ .field { margin-bottom: 18px; }
+
+.field label {
+ display: block;
+ font-size: 13px;
+ font-weight: 600;
+ margin-bottom: 7px;
+ color: var(--ink-soft);
+}
+
+.field-hint {
+ font-size: 12px;
+ color: #8C8474;
+ margin: -2px 0 7px;
+}
+
+.input-shell {
+ position: relative;
+}
+
+.field input {
+ width: 100%;
+ padding: 13px 14px;
+ font-size: 14.5px;
+ font-family: inherit;
+ color: var(--ink);
+ background: #FFFFFF;
+ border: 1.5px solid var(--line);
+ border-radius: var(--radius-sm);
+ transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+ .field input::placeholder { color: #A8A097; }
+ .field input:hover { border-color: #BDB6A4; }
+
+.field input:focus {
+ outline: none;
+ border-color: var(--leaf);
+ box-shadow: 0 0 0 3px rgba(92,138,78,0.16);
+}
+
+/* Valid checkmark */
+.valid-check {
+ position: absolute;
+ right: 13px;
+ top: 50%;
+ transform: translateY(-50%) scale(0.4);
+ color: var(--leaf);
+ opacity: 0;
+ transition: opacity 0.25s ease, transform 0.3s var(--ease);
+ pointer-events: none;
+}
+
+.field.is-valid .valid-check {
+ opacity: 1;
+ transform: translateY(-50%) scale(1);
+}
+
+ .field.is-valid input { padding-right: 38px; }
+ .input-with-action.is-valid input,
+ .field.is-valid .input-with-action input { padding-right: 66px; }
+
+/* Error state + shake */
+.field.has-error input {
+ border-color: var(--err);
+ background: var(--err-bg);
+}
+
+.field.has-error input:focus {
+ border-color: var(--err);
+ box-shadow: 0 0 0 3px rgba(194,74,60,0.14);
+}
+
+.field.has-error .input-shell,
+.field.has-error .input-with-action {
+ animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+ 10%, 90% { transform: translateX(-1px); }
+ 20%, 80% { transform: translateX(2px); }
+ 30%, 50%, 70% { transform: translateX(-4px); }
+ 40%, 60% { transform: translateX(4px); }
+}
+
+.field-error-msg {
+ display: flex;
+ align-items: center;
+ gap: 5px;
+ font-size: 12.5px;
+ color: var(--err);
+ margin-top: 0;
+ font-weight: 500;
+ max-height: 0;
+ overflow: hidden;
+ opacity: 0;
+ transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+}
+
+.field.has-error .field-error-msg {
+ max-height: 24px;
+ opacity: 1;
+ margin-top: 6px;
+}
+
+ .field-error-msg svg { flex-shrink: 0; }
+ .checkbox.has-error span { color: var(--err); }
+ .checkbox.has-error { animation: shake 0.4s ease; }
+
+ .input-with-action { position: relative; }
+ .input-with-action input { padding-right: 44px; }
+
+.ghost-toggle {
+ position: absolute;
+ right: 4px;
+ top: 50%;
+ transform: translateY(-50%);
+ background: transparent;
+ border: none;
+ width: 36px;
+ height: 36px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ color: #A8A097;
+ cursor: pointer;
+ border-radius: 8px;
+ transition: color 0.2s ease, background 0.2s ease;
+ z-index: 2;
+}
+
+ .ghost-toggle:hover { color: var(--ink-soft); background: var(--cream-dim); }
+ .ghost-toggle.is-visible { color: var(--leaf); }
+
+/* Password strength meter */
+.strength-meter {
+ display: flex;
+ gap: 4px;
+ margin-top: 8px;
+}
+
+.strength-meter .bar {
+ height: 4px;
+ flex: 1;
+ border-radius: 2px;
+ background: var(--line);
+ transition: background 0.3s ease;
+}
+
+.strength-label {
+ font-size: 11.5px;
+ margin-top: 6px;
+ color: #8C8474;
+ transition: color 0.2s ease;
+}
+
+/* Row / checkbox / links */
+.row-between {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ margin-bottom: 26px;
+ margin-top: -2px;
+}
+
+.checkbox {
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ font-size: 13.5px;
+ color: var(--ink-soft);
+ cursor: pointer;
+ user-select: none;
+}
+
+.checkbox input {
+ width: 16px;
+ height: 16px;
+ accent-color: var(--leaf);
+ cursor: pointer;
+}
+
+.checkbox--terms {
+ margin-bottom: 22px;
+ align-items: flex-start;
+ line-height: 1.45;
+}
+
+ .checkbox--terms input { margin-top: 2px; flex-shrink: 0; }
+
+.link-strong {
+ background: none;
+ border: none;
+ padding: 0;
+ font: inherit;
+ font-weight: 700;
+ color: var(--leaf);
+ cursor: pointer;
+ text-decoration: underline;
+ text-decoration-color: rgba(92,138,78,0.35);
+ text-underline-offset: 2px;
+ transition: text-decoration-color 0.2s ease;
+}
+
+ .link-strong:hover { text-decoration-color: var(--leaf); }
+
+/* Buttons */
+.btn-row {
+ display: flex;
+ gap: 10px;
+}
+
+.btn-primary {
+ flex: 1;
+ padding: 14px 0;
+ font-size: 15px;
+ font-weight: 700;
+ color: var(--cream);
+ background: var(--ink);
+ border: none;
+ border-radius: var(--radius-sm);
+ cursor: pointer;
+ transition: background 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+ position: relative;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ gap: 8px;
+}
+
+ .btn-primary:hover { background: var(--leaf-dark); }
+ .btn-primary:active { transform: scale(0.98); }
+ .btn-primary.is-loading { pointer-events: none; }
+ .btn-primary .btn-label { transition: opacity 0.2s ease; }
+ .btn-primary.is-loading .btn-label { opacity: 0; }
+
+.spinner {
+ position: absolute;
+ width: 18px;
+ height: 18px;
+ border: 2px solid rgba(247,244,234,0.3);
+ border-top-color: var(--cream);
+ border-radius: 50%;
+ opacity: 0;
+ animation: spin 0.7s linear infinite;
+}
+
+ .btn-primary.is-loading .spinner { opacity: 1; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-secondary {
+ flex: 0 0 auto;
+ padding: 14px 18px;
+ font-size: 15px;
+ font-weight: 600;
+ color: var(--ink-soft);
+ background: var(--soil-paper);
+ border: none;
+ border-radius: var(--radius-sm);
+ cursor: pointer;
+ transition: background 0.2s ease, transform 0.12s ease;
+}
+
+ .btn-secondary:hover { background: var(--cream-dim); }
+ .btn-secondary:active { transform: scale(0.98); }
+
+/* Success check overlay */
+.success-overlay {
+ position: absolute;
+ inset: 0;
+ background: var(--cream);
+ display: none;
+ align-items: center;
+ justify-content: center;
+ flex-direction: column;
+ gap: 16px;
+ text-align: center;
+ padding: 40px;
+}
+
+.success-overlay.is-active {
+ display: flex;
+ animation: panelIn 0.4s var(--ease) both;
+}
+
+.success-ring {
+ width: 72px;
+ height: 72px;
+ border-radius: 50%;
+ background: var(--leaf);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ animation: ringPop 0.5s var(--ease) both;
+}
+
+@keyframes ringPop {
+ from { transform: scale(0.5); opacity: 0; }
+ to   { transform: scale(1); opacity: 1; }
+}
+
+.success-ring svg {
+ stroke-dasharray: 24;
+ stroke-dashoffset: 24;
+ animation: checkDraw 0.4s ease 0.3s forwards;
+}
+
+@keyframes checkDraw { to { stroke-dashoffset: 0; } }
+
+.success-overlay h3 {
+ font-family: var(--font-display);
+ font-size: 24px;
+ margin: 0;
+}
+
+.success-overlay p {
+ font-size: 14px;
+ color: var(--ink-soft);
+ margin: 0;
+ max-width: 280px;
+}
+
+/* Switch line / footnote */
+.switch-line {
+ text-align: center;
+ font-size: 13.5px;
+ color: var(--ink-soft);
+ margin: 24px 0 0;
+}
+
+.footnote {
+ text-align: center;
+ font-size: 12px;
+ color: #A8A097;
+ margin: 36px 0 0;
+}
+
+/* Toast popup */
+.toast-stack {
+ position: fixed;
+ top: 24px;
+ right: 24px;
+ z-index: 999;
+ display: flex;
+ flex-direction: column;
+ gap: 10px;
+ max-width: 360px;
+}
+
+.toast {
+ display: flex;
+ align-items: flex-start;
+ gap: 10px;
+ background: var(--ink);
+ color: var(--cream);
+ padding: 14px 16px;
+ border-radius: var(--radius-sm);
+ box-shadow: 0 12px 28px rgba(27,43,31,0.28);
+ animation: toastIn 0.32s var(--ease) both;
+ border-left: 3px solid var(--err);
+}
+
+ .toast.is-leaving { animation: toastOut 0.22s ease forwards; }
+
+@keyframes toastIn {
+ from { opacity: 0; transform: translateX(24px) scale(0.97); }
+ to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes toastOut { to { opacity: 0; transform: translateX(16px) scale(0.97); } }
+
+ .toast-icon { flex-shrink: 0; color: #E8917F; margin-top: 1px; }
+ .toast-body { flex: 1; min-width: 0; }
+ .toast-title { font-size: 13.5px; font-weight: 700; margin: 0 0 2px; }
+ .toast-msg { font-size: 12.5px; color: rgba(247,244,234,0.78); margin: 0; line-height: 1.4; }
+
+.toast-close {
+ background: none;
+ border: none;
+ color: rgba(247,244,234,0.55);
+ cursor: pointer;
+ padding: 2px;
+ flex-shrink: 0;
+ border-radius: 4px;
+ transition: color 0.2s ease;
+}
+
+ .toast-close:hover { color: var(--cream); }
+
+@media (max-width: 480px) {
+   .toast-stack { top: 16px; right: 16px; left: 16px; max-width: none; }
+}
+
+/* ============================================
+RESPONSIVE
+============================================ */
+@media (max-width: 900px) {
+   .screen { grid-template-columns: 1fr; }
+   .field-panel { display: none; }
+   .mobile-brand { display: flex; }
+   .form-panel { padding: 40px 24px 56px; }
+}
+
+@media (max-width: 420px) {
+   .form-title { font-size: 24px; }
+   .row-between { flex-wrap: wrap; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+<div class="screen">
+
+ <!-- LEFT: FIELD PANEL -->
+<aside class="field-panel">
+<div class="field-sky"></div>
+<div class="particles" id="particles" aria-hidden="true"></div>
+
+<svg class="horizon-svg" viewBox="0 0 600 700" preserveAspectRatio="none" aria-hidden="true">
+<path class="growth-line" d="M -20 560 C 80 540, 140 480, 200 460 C 280 434, 320 380, 380 330 C 440 280, 480 200, 560 150" />
+<circle class="growth-dot" r="4.5" cx="560" cy="150" />
+</svg>
+
+<svg class="crop-rows" viewBox="0 0 600 700" preserveAspectRatio="none" aria-hidden="true">
+<g class="row">
+<path d="M0,700 L0,620 Q30,600 60,620 Q90,640 120,610 Q150,580 180,615 Q210,650 240,610 Q270,570 300,605 Q330,640 360,605 Q390,570 420,610 Q450,650 480,615 Q510,580 540,610 Q570,640 600,615 L600,700 Z"/>
+</g>
+<g class="row">
+<path d="M0,700 L0,650 Q40,630 80,655 Q120,680 160,648 Q200,616 240,650 Q280,684 320,648 Q360,612 400,650 Q440,688 480,652 Q520,616 560,650 L600,660 L600,700 Z"/>
+</g>
+</svg>
+
+<div class="field-content">
+<div class="brand">
+<span class="brand-mark" aria-hidden="true">
+<svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+<path d="M13 24C13 24 5 19.5 5 11.8C5 7.9 8.2 5 12 5C12 5 12.5 13 19.5 14.5C19.5 14.5 21 24 13 24Z" fill="currentColor" opacity="0.92"/>
+<path d="M13 24V13" stroke="#1B2B1F" stroke-width="1.1" stroke-linecap="round"/>
+</svg>
+</span>
+<span class="brand-name">Agricare</span>
+</div>
+
+<h1 class="field-headline">Know your<br>field before<br>the sky does.</h1>
+<p class="field-sub">Live temperature, humidity, rainfall and forecast data — gathered every morning so your decisions don't wait on guesswork.</p>
+
+<div class="field-stats" aria-hidden="true">
+<div class="stat">
+<span class="stat-label">Temp</span>
+<span class="stat-value">27°C</span>
+</div>
+<div class="stat">
+<span class="stat-label">Humidity</span>
+<span class="stat-value">64%</span>
+</div>
+<div class="stat">
+<span class="stat-label">Rainfall</span>
+<span class="stat-value"><span class="live-dot"></span>12mm</span>
+</div>
+</div>
+</div>
+</aside>
+
+ <!-- RIGHT: FORM PANEL -->
+<main class="form-panel">
+<div class="form-wrap">
+
+<div class="mobile-brand">
+<span class="brand-mark brand-mark--dark" aria-hidden="true">
+<svg width="22" height="22" viewBox="0 0 26 26" fill="none">
+<path d="M13 24C13 24 5 19.5 5 11.8C5 7.9 8.2 5 12 5C12 5 12.5 13 19.5 14.5C19.5 14.5 21 24 13 24Z" fill="currentColor" opacity="0.92"/>
+<path d="M13 24V13" stroke="#F7F4EA" stroke-width="1.1" stroke-linecap="round"/>
+</svg>
+</span>
+<span class="brand-name brand-name--dark">Agricare</span>
+</div>
+
+<div class="tabs" role="tablist" aria-label="Login or Register">
+<button class="tab is-active" id="tab-login" role="tab" aria-selected="true" aria-controls="panel-login">Log in</button>
+<button class="tab" id="tab-register" role="tab" aria-selected="false" aria-controls="panel-register">Register</button>
+<span class="tab-indicator" aria-hidden="true"></span>
+</div>
+
+<!-- LOGIN -->
+<!-- Login Form HTML -->
+<section class="panel is-active" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+    <h2 class="form-title">Welcome back</h2>
+    <p class="form-subtitle">Sign in to check today's conditions and forecasts.</p>
+
+    <form novalidate id="login-form">
+        <div class="field" id="login-email-field">
+            <label for="login-email">Email address</label>
+            <div class="input-shell">
+                <input type="email" id="login-email" name="email" placeholder="you@farmmail.com" autocomplete="email" required>
+                <svg class="valid-check" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="field-error-msg">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="currentColor"/></svg>
+                <span></span>
+            </p>
+        </div>
+
+        <div class="field" id="login-password-field">
+            <label for="login-password">Password</label>
+            <div class="input-with-action">
+                <input type="password" id="login-password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+                <button type="button" class="ghost-toggle" data-toggle-for="login-password" aria-label="Show password">
+                    <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 12C2 12 5.5 5.5 12 5.5C18.5 5.5 22 12 22 12C22 12 18.5 18.5 12 18.5C5.5 18.5 2 12 2 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+                </button>
+            </div>
+            <p class="field-error-msg">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="currentColor"/></svg>
+                <span></span>
+            </p>
+        </div>
+
+        <div class="row-between">
+            <label class="checkbox">
+                <input type="checkbox" name="remember">
+                <span>Remember me</span>
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="isAdminLogin" id="login-is-admin-checkbox">
+                <span style="font-weight: 600; color: var(--leaf-dark);">Log in as Admin</span>
+            </label>
+        </div>
+
+        <div class="btn-row">
+            <button type="submit" class="btn-primary">
+                <span class="btn-label">Log in to Agricare</span>
+                <span class="spinner" aria-hidden="true"></span>
+            </button>
+        </div>
+    </form>
+</section>
+
+<!-- Script Logic -->
+<script>
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    // Check if the "Log in as Admin" checkbox is ticked
+    const isAdminChecked = document.getElementById('login-is-admin-checkbox').checked;
+    const roleToSend = isAdminChecked ? 'admin' : 'user';
+
+    try {
+        const response = await fetch('http://localhost:5000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, role: roleToSend })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Determine role from backend response or fallback to checkbox choice
+            const assignedRole = (data.role || roleToSend).trim().toLowerCase();
+            localStorage.setItem('userRole', assignedRole);
+
+            // Redirect based on role
+            if (assignedRole === 'admin') {
+                window.location.href = 'AdminDashboard.html';
+            } else {
+                window.location.href = 'Dashboard.html';
+            }
+        } else {
+            alert(data.message || 'Login failed.');
+        }
+    } catch (error) {
+        console.error('Error connecting to backend:', error);
+        alert('Could not connect to the server.');
+    }
+});
+</script>
+
+<p class="switch-line">New to Agricare? <button type="button" class="link-strong" id="go-register">Create an account</button></p>
+</section>
+
+<!-- REGISTER (multi-step) -->
+ <section class="panel" id="panel-register" role="tabpanel" aria-labelledby="tab-register" style="position: relative;">
+   <h2 class="form-title">Set up your farm</h2>
+   <p class="form-subtitle">Three quick steps. No card required.</p>
+   
+   <div class="growth-steps" aria-hidden="true">
+   <div class="node is-current" data-step-node="1">
+   <svg class="node-leaf" viewBox="0 0 26 26" fill="none"><path d="M13 24C13 24 5 19.5 5 11.8C5 7.9 8.2 5 12 5C12 5 12.5 13 19.5 14.5C19.5 14.5 21 24 13 24Z" fill="currentColor"/></svg>
+   <svg class="node-check" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </div>
+   <div class="seg" data-seg="1"></div>
+   <div class="node" data-step-node="2">
+   <svg class="node-leaf" viewBox="0 0 26 26" fill="none"><path d="M13 24C13 24 5 19.5 5 11.8C5 7.9 8.2 5 12 5C12 5 12.5 13 19.5 14.5C19.5 14.5 21 24 13 24Z" fill="currentColor"/></svg>
+   <svg class="node-check" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </div>
+   <div class="seg" data-seg="2"></div>
+   <div class="node" data-step-node="3">
+   <svg class="node-leaf" viewBox="0 0 26 26" fill="none"><path d="M13 24C13 24 5 19.5 5 11.8C5 7.9 8.2 5 12 5C12 5 12.5 13 19.5 14.5C19.5 14.5 21 24 13 24Z" fill="currentColor"/></svg>
+   <svg class="node-check" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </div>
+   </div>
+   
+   <form novalidate id="register-form">
+   <div class="step-track">
+
+   <!-- STEP 1: name + email -->
+   <div class="step-pane is-active" data-step="1">
+   <div class="field" id="reg-name-field">
+   <label for="reg-name">Full name</label>
+   <div class="input-shell">
+   <input type="text" id="reg-name" name="name" placeholder="Your full name" autocomplete="name" required>
+   <svg class="valid-check" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </div>
+   <p class="field-error-msg">
+   <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="currentColor"/></svg>
+   <span></span>
+   </p>
+   </div>
+   
+   <div class="field" id="reg-email-field">
+   <label for="reg-email">Email address</label>
+   <div class="input-shell">
+   <input type="email" id="reg-email" name="email" placeholder="you@farmmail.com" autocomplete="email" required>
+   <svg class="valid-check" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </div>
+   <p class="field-error-msg">
+   <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="currentColor"/></svg>
+   <span></span>
+   </p>
+   </div>
+   
+   <div class="btn-row">
+   <button type="button" class="btn-primary" data-next="2">
+   <span class="btn-label">Next: Farm details</span>
+   <span class="spinner" aria-hidden="true"></span>
+   </button>
+   </div>
+   </div>
+
+   <!-- STEP 2: location + password -->
+   <div class="step-pane" data-step="2">
+   <div class="field" id="reg-location-field">
+   <label for="reg-location">Farm location</label>
+   <div class="input-shell">
+   <input type="text" id="reg-location" name="location" placeholder="Village / district, state" autocomplete="address-level2" required>
+   <svg class="valid-check" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </div>
+   <p class="field-error-msg">
+   <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="currentColor"/></svg>
+   <span></span>
+   </p>
+   </div>
+   
+   <div class="field" id="reg-password-field">
+   <label for="reg-password">Password</label>
+   <div class="input-with-action">
+   <input type="password" id="reg-password" name="password" placeholder="Create a password" autocomplete="new-password" required>
+   <button type="button" class="ghost-toggle" data-toggle-for="reg-password" aria-label="Show password">
+   <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 12C2 12 5.5 5.5 12 5.5C18.5 5.5 22 12 22 12C22 12 18.5 18.5 12 18.5C5.5 18.5 2 12 2 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+   </button>
+   </div>
+   <div class="strength-meter" aria-hidden="true">
+   <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+   </div>
+   <p class="strength-label">At least 8 characters, with a number</p>
+   <p class="field-error-msg">
+   <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="currentColor"/></svg>
+   <span></span>
+   </p>
+   </div>
+   
+   <div class="btn-row">
+   <button type="button" class="btn-secondary" data-back="1">Back</button>
+   <button type="button" class="btn-primary" data-next="3">
+   <span class="btn-label">Next: Confirm</span>
+   <span class="spinner" aria-hidden="true"></span>
+   </button>
+   </div>
+   </div>
+
+   <!-- STEP 3: confirm + terms -->
+   <div class="step-pane" data-step="3">
+   <div class="field-hint" style="margin-bottom:18px; font-size:13.5px; color: var(--ink-soft);" id="reg-summary">
+     Almost there — review and confirm.
+   </div>
+   
+   <label class="checkbox checkbox--terms" id="reg-terms-field">
+   <input type="checkbox" name="terms" required>
+   <span>I agree to the Terms of Service and Privacy Policy</span>
+   </label>
+   
+   <div class="btn-row">
+   <button type="button" class="btn-secondary" data-back="2">Back</button>
+   <button type="submit" class="btn-primary">
+   <span class="btn-label">Create account</span>
+   <span class="spinner" aria-hidden="true"></span>
+   </button>
+   </div>
+   </div>
+   
+   </div>
+   </form>
+   
+   <p class="switch-line">Already growing with us? <button type="button" class="link-strong" id="go-login">Log in</button></p>
+   
+   <div class="success-overlay" id="register-success">
+   <div class="success-ring">
+   <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="#F7F4EA" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </div>
+   <h3>Welcome to Agricare</h3>
+   <p>Your farm profile is set up. Redirecting you to the login page...</p>
+   </div>
+</section>
+
+<p class="footnote">Protected by encryption · Agricare © 2026</p>
+</div>
+</main>
+
+</div>
+
+<script>
+(function () {
+    const toastStack = document.getElementById('toast-stack');
+
+    function showToast(title, message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML =
+            '<svg class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="currentColor"/></svg>' +
+            '<div class="toast-body"><p class="toast-title">' + title + '</p><p class="toast-msg">' + message + '</p></div>' +
+            '<button type="button" class="toast-close" aria-label="Dismiss"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>';
+
+        toastStack.appendChild(toast);
+
+        function remove() {
+            toast.classList.add('is-leaving');
+            setTimeout(() => toast.remove(), 220);
+        }
+
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        setTimeout(remove, 4200);
+    }
+
+    // ---------- Tabs ----------
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const tabsWrap = document.querySelector('.tabs');
+    const panelLogin = document.getElementById('panel-login');
+    const panelRegister = document.getElementById('panel-register');
+    const goRegister = document.getElementById('go-register');
+    const goLogin = document.getElementById('go-login');
+
+    function showPanel(target) {
+        [panelLogin, panelRegister].forEach(p => p.classList.remove('is-active'));
+        target.classList.add('is-active');
+    }
+
+    function setTab(which) {
+        const isLogin = which === 'login';
+        tabLogin.classList.toggle('is-active', isLogin);
+        tabRegister.classList.toggle('is-active', !isLogin);
+        tabLogin.setAttribute('aria-selected', String(isLogin));
+        tabRegister.setAttribute('aria-selected', String(!isLogin));
+        tabsWrap.classList.toggle('register-active', !isLogin);
+        showPanel(isLogin ? panelLogin : panelRegister);
+    }
+
+    tabLogin.addEventListener('click', () => setTab('login'));
+    tabRegister.addEventListener('click', () => setTab('register'));
+    goRegister.addEventListener('click', () => setTab('register'));
+    goLogin.addEventListener('click', () => setTab('login'));
+
+    // ---------- Password visibility ----------
+    document.querySelectorAll('.ghost-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-toggle-for');
+            const input = document.getElementById(targetId);
+            const isVisible = input.type === 'text';
+            input.type = isVisible ? 'password' : 'text';
+            btn.classList.toggle('is-visible', !isVisible);
+            btn.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+        });
+    });
+
+    // ---------- Validation helpers ----------
+    function setFieldError(fieldEl, message) {
+        fieldEl.classList.remove('is-valid');
+        fieldEl.classList.add('has-error');
+        const msgSpan = fieldEl.querySelector('.field-error-msg span');
+        if (msgSpan) msgSpan.textContent = message;
+        const shakeTarget = fieldEl.querySelector('.input-shell, .input-with-action') || fieldEl;
+        shakeTarget.style.animation = 'none';
+        requestAnimationFrame(() => { shakeTarget.style.animation = ''; });
+    }
+
+    function setFieldValid(fieldEl) {
+        fieldEl.classList.remove('has-error');
+        fieldEl.classList.add('is-valid');
+    }
+
+    function clearFieldState(fieldEl) {
+        fieldEl.classList.remove('has-error', 'is-valid');
+    }
+
+    function enforceLowercaseEmail(inputEl) {
+        inputEl.addEventListener('input', (e) => {
+            const start = inputEl.selectionStart;
+            const end = inputEl.selectionEnd;
+            inputEl.value = inputEl.value.toLowerCase();
+            inputEl.setSelectionRange(start, end);
+        });
+    }
+
+    function isValidEmail(value) {
+        return /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(value);
+    }
+
+    function emailErrorMessage(value) {
+        const v = value.trim();
+        if (v === '') return 'Email address is required.';
+        if (/[A-Z]/.test(v)) return 'All letters in the email must be lowercase.';
+        if (!v.includes('@')) return 'Add an @ before the domain, e.g. name@example.com';
+        const parts = v.split('@');
+        if (parts.length > 2) return 'Only one @ is allowed in an email address.';
+        const [local, domain] = parts;
+        if (!local) return 'Add a name before the @, e.g. name@example.com';
+        if (!domain) return 'Add a domain after the @, e.g. @example.com';
+        if (!domain.includes('.')) return 'Domain needs a dot, e.g. example.com';
+        if (domain.endsWith('.')) return "Domain can't end with a dot.";
+        if (/\s/.test(v)) return 'Email address cannot contain spaces.';
+        return 'Enter a valid email address.';
+    }
+
+    function liveClear(inputEl, fieldEl) {
+        inputEl.addEventListener('input', () => {
+            if (fieldEl.classList.contains('has-error')) clearFieldState(fieldEl);
+        });
+    }
+
+    // ---------- Login form with Admin Check & Redirection ----------
+    const loginForm = document.getElementById('login-form');
+    const loginEmailField = document.getElementById('login-email-field');
+    const loginEmail = document.getElementById('login-email');
+    const loginPasswordField = document.getElementById('login-password-field');
+    const loginPassword = document.getElementById('login-password');
+    const loginIsAdminCheckbox = document.getElementById('login-is-admin-checkbox');
+
+    enforceLowercaseEmail(loginEmail);
+    liveClear(loginEmail, loginEmailField);
+    liveClear(loginPassword, loginPasswordField);
+
+    function validateLoginEmail() {
+        const v = loginEmail.value.trim();
+        if (v === '' || !isValidEmail(v)) {
+            setFieldError(loginEmailField, emailErrorMessage(loginEmail.value));
+            return false;
+        }
+        setFieldValid(loginEmailField);
+        return true;
+    }
+
+    function validateLoginPassword() {
+        if (loginPassword.value === '') {
+            setFieldError(loginPasswordField, 'Password is required.');
+            return false;
+        }
+        setFieldValid(loginPasswordField);
+        return true;
+    }
+
+    loginEmail.addEventListener('blur', () => { if (loginEmail.value.trim() !== '') validateLoginEmail(); });
+    loginPassword.addEventListener('blur', () => { if (loginPassword.value !== '') validateLoginPassword(); });
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const emailOk = validateLoginEmail();
+        const passOk = validateLoginPassword();
+
+        if (!emailOk || !passOk) {
+            const count = [emailOk, passOk].filter(v => !v).length;
+            showToast('Check your details', count === 1 ? 'One field needs your attention.' : count + ' fields need your attention.');
+            (emailOk ? loginPassword : loginEmail).focus();
+            return;
+        }
+
+        const btn = loginForm.querySelector('.btn-primary');
+        btn.classList.add('is-loading');
+
+        const credentials = {
+            email: loginEmail.value.trim(),
+            password: loginPassword.value,
+            isAdminChecked: loginIsAdminCheckbox.checked
+        };
+
+        fetch('http://localhost:5000/api/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(credentials)
+        })
+        .then(async (response) => {
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Invalid email or password.');
+            }
+
+            if (data.token) {
+                localStorage.setItem('authToken', data.token);
+            }
+            localStorage.setItem('userRole', data.role);
+
+            btn.classList.remove('is-loading');
+            
+            if (data.role === 'admin') {
+                showToast('Admin Access Granted', 'Redirecting to Admin & Security section...');
+                setTimeout(() => {
+                    window.location.href = "AdminDashboard.html#admin-security";
+                }, 1000);
+            } else {
+                showToast('Welcome back', 'Redirecting to Full Dashboard...');
+                setTimeout(() => {
+                    window.location.href = "Dashboard.html#dashboard";
+                }, 1000);
+            }
+        })
+        .catch((error) => {
+            btn.classList.remove('is-loading');
+            setFieldError(loginPasswordField, error.message);
+            showToast('Access Denied', error.message);
+        });
+    });
+
+    // ---------- Register form: multi-step ----------
+    const registerForm = document.getElementById('register-form');
+    const stepPanes = Array.from(registerForm.querySelectorAll('.step-pane'));
+    const stepNodes = Array.from(document.querySelectorAll('[data-step-node]'));
+    const stepSegs = Array.from(document.querySelectorAll('[data-seg]'));
+    let currentStep = 1;
+
+    const regNameField = document.getElementById('reg-name-field');
+    const regName = document.getElementById('reg-name');
+    const regEmailField = document.getElementById('reg-email-field');
+    const regEmail = document.getElementById('reg-email');
+    const regLocationField = document.getElementById('reg-location-field');
+    const regLocation = document.getElementById('reg-location');
+    const regPasswordField = document.getElementById('reg-password-field');
+    const regPassword = document.getElementById('reg-password');
+    const regTermsField = document.getElementById('reg-terms-field');
+    const regTerms = regTermsField.querySelector('input[name="terms"]');
+    const regSummary = document.getElementById('reg-summary');
+
+    enforceLowercaseEmail(regEmail);
+    [[regName, regNameField], [regEmail, regEmailField], [regLocation, regLocationField], [regPassword, regPasswordField]]
+        .forEach(([input, field]) => liveClear(input, field));
+    regTerms.addEventListener('change', () => regTermsField.classList.remove('has-error'));
+
+    function nameErrorMessage(value) {
+        const v = value.trim();
+        if (v === '') return 'Full name is required.';
+        if (!/^[A-Za-z\s'.-]+$/.test(v)) return 'Use letters only — no numbers or symbols.';
+        if (v.length < 2) return 'Name is too short.';
+        return 'Enter your full name.';
+    }
+
+    function validateName() {
+        const v = regName.value;
+        if (v.trim() === '' || !/^[A-Za-z\s'.-]+$/.test(v.trim()) || v.trim().length < 2) {
+            setFieldError(regNameField, nameErrorMessage(v));
+            return false;
+        }
+        setFieldValid(regNameField);
+        return true;
+    }
+
+    function validateRegEmail() {
+        const v = regEmail.value.trim();
+        if (v === '' || !isValidEmail(v)) {
+            setFieldError(regEmailField, emailErrorMessage(regEmail.value));
+            return false;
+        }
+        setFieldValid(regEmailField);
+        return true;
+    }
+
+    function validateLocation() {
+        const v = regLocation.value;
+        if (v.trim() === '') {
+            setFieldError(regLocationField, 'Farm location is required.');
+            return false;
+        }
+        if (v.trim().length < 3) {
+            setFieldError(regLocationField, 'Add a bit more detail, e.g. village and state.');
+            return false;
+        }
+        setFieldValid(regLocationField);
+        return true;
+    }
+
+    const strengthBars = Array.from(registerForm.querySelectorAll('.strength-meter .bar'));
+    const strengthLabel = registerForm.querySelector('.strength-label');
+    const strengthColors = ['#C24A3C', '#C8915B', '#9CAF50', '#5C8A4E'];
+    const strengthText = ['Too weak', 'Weak — add numbers or symbols', 'Good — could be stronger', 'Strong password'];
+
+    function passwordScore(v) {
+        let score = 0;
+        if (v.length >= 8) score++;
+        if (/[0-9]/.test(v)) score++;
+        if (/[a-z]/.test(v) && /[A-Z]/.test(v)) score++;
+        if (/[^A-Za-z0-9]/.test(v)) score++;
+        return score;
+    }
+
+    regPassword.addEventListener('input', () => {
+        const v = regPassword.value;
+        const score = v === '' ? 0 : Math.max(1, passwordScore(v));
+        strengthBars.forEach((bar, i) => {
+            bar.style.background = i < score ? strengthColors[score - 1] : 'var(--line)';
+        });
+        strengthLabel.textContent = v === '' ? 'At least 8 characters, with a number' : strengthText[score - 1];
+        strengthLabel.style.color = v === '' ? '#8C8474' : strengthColors[score - 1];
+        if (regPasswordField.classList.contains('has-error')) clearFieldState(regPasswordField);
+    });
+
+    function passwordErrorMessage(value) {
+        if (value === '') return 'Password is required.';
+        if (value.length < 8) return 'Needs at least 8 characters — ' + (8 - value.length) + ' more to go.';
+        if (!/[0-9]/.test(value)) return 'Add at least one number.';
+        return 'Choose a stronger password.';
+    }
+
+    function validatePassword() {
+        const v = regPassword.value;
+        if (v === '' || v.length < 8 || !/[0-9]/.test(v)) {
+            setFieldError(regPasswordField, passwordErrorMessage(v));
+            return false;
+        }
+        setFieldValid(regPasswordField);
+        return true;
+    }
+
+    regName.addEventListener('blur', () => { if (regName.value.trim() !== '') validateName(); });
+    regEmail.addEventListener('blur', () => { if (regEmail.value.trim() !== '') validateRegEmail(); });
+    regLocation.addEventListener('blur', () => { if (regLocation.value.trim() !== '') validateLocation(); });
+    regPassword.addEventListener('blur', () => { if (regPassword.value !== '') validatePassword(); });
+
+    function goToStep(target, direction) {
+        stepPanes.forEach(p => {
+            p.classList.remove('is-active', 'is-leaving-back');
+        });
+        const targetPane = stepPanes.find(p => p.dataset.step === String(target));
+        targetPane.classList.add(direction === 'back' ? 'is-leaving-back' : 'is-active');
+        if (direction === 'back') targetPane.classList.add('is-active');
+
+        stepNodes.forEach(node => {
+            const n = Number(node.dataset.stepNode);
+            node.classList.remove('is-current', 'is-done');
+            if (n < target) node.classList.add('is-done');
+            else if (n === target) node.classList.add('is-current');
+        });
+
+        stepSegs.forEach(seg => {
+            const n = Number(seg.dataset.seg);
+            seg.classList.toggle('is-filled', n < target);
+        });
+
+        currentStep = target;
+
+        if (target === 3) {
+            regSummary.textContent = 'Confirming for ' + (regName.value.trim() || 'your account') + ' — ' + (regEmail.value.trim() || '');
+        }
+    }
+
+    registerForm.querySelectorAll('[data-next]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const next = Number(btn.getAttribute('data-next'));
+            let valid = true;
+            let firstInvalid = null;
+            let errorCount = 0;
+
+            if (currentStep === 1) {
+                const nameOk = validateName();
+                const emailOk = validateRegEmail();
+                valid = nameOk && emailOk;
+                if (!nameOk) { firstInvalid = firstInvalid || regName; errorCount++; }
+                if (!emailOk) { firstInvalid = firstInvalid || regEmail; errorCount++; }
+            } else if (currentStep === 2) {
+                const locOk = validateLocation();
+                const passOk = validatePassword();
+                valid = locOk && passOk;
+                if (!locOk) { firstInvalid = firstInvalid || regLocation; errorCount++; }
+                if (!passOk) { firstInvalid = firstInvalid || regPassword; errorCount++; }
+            }
+
+            if (!valid) {
+                showToast('Fix this before continuing', errorCount === 1 ? 'One field needs your attention.' : errorCount + ' fields need your attention.');
+                if (firstInvalid) firstInvalid.focus();
+                return;
+            }
+
+            goToStep(next, 'forward');
+        });
+    });
+
+    registerForm.querySelectorAll('[data-back]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            goToStep(Number(btn.getAttribute('data-back')), 'back');
+        });
+    });
+
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        if (!regTerms.checked) {
+            regTermsField.classList.add('has-error');
+            showToast('One more thing', 'Agree to the Terms of Service to continue.');
+            regTerms.focus();
+            return;
+        }
+        regTermsField.classList.remove('has-error');
+
+        const btn = registerForm.querySelector('[data-step="3"] .btn-primary');
+        btn.classList.add('is-loading');
+
+        const payload = {
+            name: regName.value,
+            email: regEmail.value.trim(),
+            location: regLocation.value,
+            password: regPassword.value
+        };
+
+        fetch('http://localhost:5000/api/users/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Registration failed.');
+            }
+            
+            document.getElementById('register-success').classList.add('is-active');
+
+            setTimeout(() => {
+                document.getElementById('register-success').classList.remove('is-active');
+                btn.classList.remove('is-loading');
+                
+                // Pre-fill login email with the newly registered email
+                loginEmail.value = regEmail.value.trim();
+                setFieldValid(loginEmailField);
+                
+                // Switch back to login view tab seamlessly
+                setTab('login');
+                
+                showToast('Account Created!', 'Please sign in with your email and password.');
+            }, 2000);
+        })
+        .catch(error => {
+            btn.classList.remove('is-loading');
+            showToast('Registration Error', error.message);
+        });
+    });
+
+    const particleHost = document.getElementById('particles');
+    const particleCount = 14;
+    for (let i = 0; i < particleCount; i++) {
+        const p = document.createElement('span');
+        p.className = 'particle';
+        p.style.setProperty('--x', Math.random() * 100 + '%');
+        p.style.setProperty('--y', 40 + Math.random() * 55 + '%');
+        p.style.setProperty('--s', 2 + Math.random() * 3 + 'px');
+        p.style.setProperty('--dur', 6 + Math.random() * 8 + 's');
+        p.style.setProperty('--delay', (Math.random() * 8) + 's');
+        particleHost.appendChild(p);
+    }
+})();
+</script>   
+<script>
+    document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const roleElement = document.getElementById('role');
+        const role = roleElement ? roleElement.value : 'user'; 
+
+        try {
+            const response = await fetch('http://localhost:5000/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Clean and save the role safely
+                const assignedRole = (data.role || role).trim().toLowerCase();
+                localStorage.setItem('userRole', assignedRole);
+
+                // Direct routing to Admin or User dashboard
+                if (assignedRole === 'admin') {
+                    window.location.href = 'AdminDashboard.html';
+                } else {
+                    window.location.href = 'Dashboard.html';
+                }
+            } else {
+                alert(data.message || 'Registration failed.');
+            }
+        } catch (error) {
+            console.error('Error connecting to backend:', error);
+            alert('Could not connect to the server.');
+        }
+    });
+</script>
+</body>
+</html>
